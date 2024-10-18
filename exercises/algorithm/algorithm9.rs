@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -37,7 +36,15 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.items.push(value);
+        self.count += 1;
+        let mut cur_idx = self.count;
+        let mut parent_idx = self.parent_idx(cur_idx);
+        while parent_idx > 0 && (self.comparator)(&self.items[cur_idx], &self.items[parent_idx]) {
+            self.items.swap(cur_idx, parent_idx);
+            cur_idx = parent_idx;
+            parent_idx = self.parent_idx(cur_idx);
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +64,17 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        if self.children_present(idx) {
+            if self.right_child_idx(idx) > self.count {
+                self.left_child_idx(idx)
+            } else if (&self.comparator)(&self.items[self.left_child_idx(idx)], &self.items[self.right_child_idx(idx)]) {
+                self.left_child_idx(idx)
+            } else {
+                self.right_child_idx(idx)
+            }
+        } else {
+            0
+        }
     }
 }
 
@@ -84,8 +100,28 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            None
+        } else {
+            self.items.swap(1, self.count);
+            let res = self.items.pop().unwrap();
+            self.count -= 1;
+            let mut idx = 1;
+            let mut smallest_child_idx = self.smallest_child_idx(idx);
+            if smallest_child_idx == 0 {
+                return Some(res);
+            }
+            // heapify
+            while (self.comparator)(&self.items[smallest_child_idx], &self.items[idx]) {
+                self.items.swap(smallest_child_idx, idx);
+                idx = smallest_child_idx;
+                smallest_child_idx = self.smallest_child_idx(idx);
+                if smallest_child_idx == 0 {
+                    return Some(res);
+                }
+            }
+            Some(res)
+        }
     }
 }
 
